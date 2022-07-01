@@ -31,10 +31,16 @@ v <- sort(rowSums(m),decreasing=TRUE)
 d <- data.frame(word = names(v),freq=v)
 head(d, 10)
 
+d<-d[-c(8,16,25,36,37),]
+
 
 #create the word cloud
-wordcloud(words = d$word, freq = d$freq, min.freq =30,
-          max.words=20, random.order=FALSE, rot.per=0.2, 
-          colors=brewer.pal(4, "Dark2"))
+tiff(here::here("Figures","WordCloud.tiff"),compression="lzw", height=3000,width=4500,res=500)
+wordcloud(words = d$word, freq = d$freq, min.freq =30,random.color=F,
+          max.words=20, random.order=FALSE, rot.per=0.3, 
+          colors=brewer.pal(6, "Dark2"))
+dev.off()
+
+
 
 findAssocs(dtm, terms = "dispersal", corlimit = 0.6)
