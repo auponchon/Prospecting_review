@@ -17,23 +17,24 @@ inspect(docs)
 docs.clean <- docs %>%
     tm_map(removeNumbers) %>%
     tm_map(removePunctuation) %>%
-    tm_map(stripWhitespace) %>% 
-    tm_map(content_transformer(tolower)) %>% 
-    tm_map(removeWords, stopwords("english")) 
+#    tm_map(stripWhitespace) %>% 
+#    tm_map(content_transformer(tolower)) %>% 
+    tm_map(removeWords, stopwords("en")) 
 
     
-    
-#generate a matrix 
+    #generate a matrix 
 dtm <- TermDocumentMatrix(docs.clean)
 m <- as.matrix(dtm)
 v <- sort(rowSums(m),decreasing=TRUE)
+
+
 d <- data.frame(word = names(v),freq=v)
 head(d, 10)
 
 
 #create the word cloud
 wordcloud(words = d$word, freq = d$freq, min.freq =30,
-          max.words=30, random.order=FALSE, rot.per=0.35, 
+          max.words=20, random.order=FALSE, rot.per=0.2, 
           colors=brewer.pal(4, "Dark2"))
 
-findAssocs(dtm, terms = "prospecting", corlimit = 0.5)
+findAssocs(dtm, terms = "dispersal", corlimit = 0.6)
