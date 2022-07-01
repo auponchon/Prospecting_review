@@ -1,16 +1,18 @@
 library(ggplot2)
+library(plyr)
 library(tidyverse)
 library(readxl)
 library(here)
 library(viridis)
-library(plyr)
+library(ggrepel)
+library(gridExtra)
 
 
 #import data table from xlsx file
-dat<-read_xlsx(here("Data","Prospecting bibliography.xlsx"),n_max=154,col_names = T)
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),n_max=154,col_names = T)
 names(dat)<- str_replace_all(names(dat), " ", "_") 
 
-#select dataset with prospecting
+#rename taxa
 dat$Order<-revalue(as.factor(dat$Order), c("annelid" = "Annelids",
                                               "fish" = "Fish",
                                               "insect" = "Insects",
@@ -21,28 +23,90 @@ dat$Order<-revalue(as.factor(dat$Order), c("annelid" = "Annelids",
                                               "raptor" = "Other birds",
                                               "shorebird" = "Other birds",
                                               "waterfowl" = "Other birds"))
-dat$Order<-droplevels(dat$Order)
 
+
+#select dataset with prospecting and count taxa
 prosp.taxa<-dat %>% 
        dplyr::filter(Class== "prospecting") %>% 
        group_by(Order) %>% 
        count() %>% 
-       arrange(n)
+       arrange(desc(n))
 
+prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Seabirds","Mammals",
+                                                    "Other birds","Insects","Fish","Annelids")))
 
-rosp.taxa$Label <- paste(prosp.taxa$Order, 
-                          paste(round(((prosp.taxa$n/sum(prosp.taxa$n))*100),1),"%"), sep=" - ")
+Labs<-paste(prosp.taxa$Order, 
+      paste(round(((prosp.taxa$n/sum(prosp.taxa$n))*100),0),"%"), sep=" - ")
+
+Breaks<-cumsum(prosp.taxa$n) - (prosp.taxa$n/ 2)
 
 #set colors for taxa with birds within same color
-colo1<-turbo(6,begin=0.8, end=1)
-colo2<-turbo(4, begin=0.1,end=0.8)
+colo<-viridis(nrow(prosp.taxa),begin=0.1)
 
-
-
-
+#create a pie with prosportions of taxa
 taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) + 
-    geom_bar(stat = "identity") +
-    coord_polar(theta = 'y') + theme_void() +
-    geom_text(aes(label = Label), position = position_stack(vjust = 0.5))
+    geom_bar(stat="identity",color="black") +
+    coord_polar(theta='y',start=0) +
+     geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs),
+                      size = 3, nudge_x = .3, 
+                      segment.size = .7, show.legend = FALSE) +
+    guides(fill = guide_legend(title = "Taxa"))+
+    scale_fill_manual(values=colo) +
+    labs(tag="a)") +
+    theme_void() 
+   
 
 print(taxa)
+
+
+
+##########################################################################################
+# plotting pie chart with tracking methods
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),n_max=154,col_names = T)
+dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
+                                           "direct observations" = "Ringing/\nDirect obs",
+                                           "GPS-UHF" = "GPS/PTT",
+                                           "GPS" = "GPS/PTT",
+                                           "PTT" = "GPS/PTT",
+                                           "GPS-GSM" = "GPS/PTT",
+                                           "GPS-PTT+VHF" = "GPS/PTT",
+                                           "GPS+PTT" = "GPS/PTT",
+                                           "Automated VHF" = "VHF",
+                                           "video-recording" = "Video-recording"))
+
+#Counting the number of studies by tracking method
+prosp.track<-dat %>% 
+    dplyr::filter(Class== "prospecting") %>% 
+    group_by(Method) %>% 
+    count() %>% 
+    arrange(desc(n))
+
+prosp.track$Method<-factor(prosp.track$Method, levels= c("Ringing/\nDirect obs",
+                                                         "VHF","GPS/PTT", "RFID","Video-recording"))
+
+
+Labs.track<-rev(paste(prosp.track$Method, 
+            paste(round(((prosp.track$n/sum(prosp.track$n))*100),0),"%"), sep="\n"))
+
+Breaks.track<-cumsum(rev(prosp.track$n)) - (rev(prosp.track$n)/ 2)
+
+#set colors for taxa with birds within same color
+colo.trk<-magma(nrow(prosp.track),begin=0.25)
+
+#create a pie with prosportions of taxa
+meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) + 
+    geom_bar(stat="identity",color="black") +
+    coord_polar(theta='y',start=0) +
+    geom_label_repel(aes(x=1.4, y = rev(Breaks.track), label = rev(Labs.track)),
+                       size = 3, nudge_x = .3,
+                       segment.size = .7, show.legend = FALSE) +
+    guides(fill = guide_legend(title = "Method")) +
+    scale_fill_manual(values=colo.trk) +
+    labs(tag="b)") +
+    theme_void() 
+
+print(meth)
+
+tiff(here::here("Figures","Piecharts_studies.tiff"),height=2000, width=6000,res=500,compression="lzw")
+grid.arrange(taxa,meth,ncol=2)
+dev.off()
