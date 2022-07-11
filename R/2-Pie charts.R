@@ -9,7 +9,7 @@ library(gridExtra)
 
 
 #import data table from xlsx file
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),n_max=154,col_names = T)
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
 names(dat)<- str_replace_all(names(dat), " ", "_") 
 
 #rename taxa
@@ -32,8 +32,8 @@ prosp.taxa<-dat %>%
        count() %>% 
        arrange(desc(n))
 
-prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Seabirds","Mammals",
-                                                    "Other birds","Insects","Fish","Annelids")))
+prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines", "Other birds","Seabirds","Mammals",
+                                                   "Insects","Fish","Annelids")))
 
 Labs<-paste(prosp.taxa$Order, 
       paste(round(((prosp.taxa$n/sum(prosp.taxa$n))*100),0),"%"), sep=" - ")
@@ -62,7 +62,7 @@ print(taxa)
 
 ##########################################################################################
 # plotting pie chart with tracking methods
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),n_max=154,col_names = T)
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),col_names = T,sheet=1)
 dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
                                            "direct observations" = "Ringing/\nDirect obs",
                                            "GPS-UHF" = "GPS/PTT",
@@ -110,3 +110,47 @@ print(meth)
 tiff(here::here("Figures","Piecharts_studies.tiff"),height=2000, width=6000,res=500,compression="lzw")
 grid.arrange(taxa,meth,ncol=2)
 dev.off()
+
+##########################################################################################
+# plotting pie chart with tracking methods
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
+
+#Counting the number of studies by year
+prosp.year<-dat %>% 
+    dplyr::filter(Class== "prospecting") %>% 
+    group_by(Year) %>% 
+    count()
+
+evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
+    geom_bar(stat="identity",color="black",fill="white") +
+    scale_x_continuous(breaks=seq(1990,2022,5),limits=c(1989,2023),expand=c(0,0)) +
+    scale_y_continuous(breaks=seq(0,10,2),limits=c(0,10),expand=c(0,0)) +
+    labs(y="Number of studies",tag="c) ") +
+    theme_classic()
+print(evol)
+
+
+##########################################################################################
+# plotting pie chart with countries
+# dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
+# 
+# #Counting the number of studies by year
+# prosp.pays<-dat %>% 
+#     dplyr::filter(Class== "prospecting") %>% 
+#     group_by(Region) %>% 
+#     count() %>% 
+#     arrange(desc(n))
+# 
+# pays<-ggplot(prosp.pays, aes(x = 1, y = n, fill = Region)) + 
+#     geom_bar(stat="identity",color="black") +
+#     coord_polar(theta='y',start=0) +
+#     # geom_label_repel(aes(x=1.4, y = rev(Breaks.track), label = rev(Labs.track)),
+#     #                  size = 3, nudge_x = .3,
+#     #                  segment.size = .7, show.legend = FALSE) +
+#     guides(fill = guide_legend(title = "Country")) +
+#    # scale_fill_manual(values=colo.trk) +
+#     labs(tag="b)") +
+#     theme_void() 
+# 
+# print(pays)
+# 
