@@ -32,11 +32,12 @@ prosp.taxa<-dat %>%
        count() %>% 
        arrange(desc(n))
 
-prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines", "Other birds","Seabirds","Mammals",
-                                                   "Insects","Fish","Annelids")))
+prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Other birds", "Seabirds","Mammals",
+                                                  "Insects","Fish","Annelids")))
 
 Labs<-paste(prosp.taxa$Order, 
       paste(round(((prosp.taxa$n/sum(prosp.taxa$n))*100),0),"%"), sep=" - ")
+#Labs<-Labs[c(1,3,4,2,5:7)]
 
 Breaks<-cumsum(prosp.taxa$n) - (prosp.taxa$n/ 2)
 
@@ -47,7 +48,7 @@ colo<-viridis(nrow(prosp.taxa),begin=0.1)
 taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) + 
     geom_bar(stat="identity",color="black") +
     coord_polar(theta='y',start=0) +
-     geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs),
+     geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs, fill=Order),
                       size = 3, nudge_x = .3, 
                       segment.size = .7, show.legend = FALSE) +
     guides(fill = guide_legend(title = "Taxa"))+
@@ -62,7 +63,8 @@ print(taxa)
 
 ##########################################################################################
 # plotting pie chart with tracking methods
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),col_names = T,sheet=1)
+dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),col_names = T,sheet=1) %>% 
+               dplyr::filter(Class== "prospecting") 
 dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
                                            "direct observations" = "Ringing/\nDirect obs",
                                            "GPS-UHF" = "GPS/PTT",
@@ -70,13 +72,14 @@ dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
                                            "PTT" = "GPS/PTT",
                                            "GPS-GSM" = "GPS/PTT",
                                            "GPS-PTT+VHF" = "GPS/PTT",
+                                           "GPS-PTT" = "GPS/PTT",
                                            "GPS+PTT" = "GPS/PTT",
                                            "Automated VHF" = "VHF",
-                                           "video-recording" = "Video-recording"))
+                                           "video-recording" = "Video-recording")) 
 
 #Counting the number of studies by tracking method
 prosp.track<-dat %>% 
-    dplyr::filter(Class== "prospecting") %>% 
+    
     group_by(Method) %>% 
     count() %>% 
     arrange(desc(n))
@@ -107,7 +110,7 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
 
 print(meth)
 
-tiff(here::here("Figures","Piecharts_studies.tiff"),height=2000, width=6000,res=500,compression="lzw")
+tiff(here::here("outputs","Piecharts_studies.tiff"),height=2000, width=6000,res=500,compression="lzw")
 grid.arrange(taxa,meth,ncol=2)
 dev.off()
 

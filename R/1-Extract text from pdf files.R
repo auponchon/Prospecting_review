@@ -13,12 +13,22 @@ text<-lapply(files,readLines)
 docs <- Corpus(VectorSource(text))
 inspect(docs)
 
+gsub("extraterritorial", "extra-territorial", docs)
+gsub("males", "male", docs)
+gsub("females", "female", docs)
+gsub("sites", "site", docs)
+gsub("territories", "territory", docs)
+gsub("nests", "nest", docs)
+
+
+
 #Clean text
 docs.clean <- docs %>%
     tm_map(removeNumbers) %>%
     tm_map(removePunctuation) %>%
 #    tm_map(stripWhitespace) %>% 
-#    tm_map(content_transformer(tolower)) %>% 
+    tm_map(content_transformer(tolower)) %>% 
+    tm_map( content_transformer(removePunctuation)) %>% 
     tm_map(removeWords, stopwords("en")) 
 
     
@@ -31,7 +41,7 @@ v <- sort(rowSums(m),decreasing=TRUE)
 d <- data.frame(word = names(v),freq=v)
 head(d, 10)
 
-d<-d[-c(8,16,25,36,37),]
+d<-d[-c(7,14,25,36,37),]
 
 
 #create the word cloud
