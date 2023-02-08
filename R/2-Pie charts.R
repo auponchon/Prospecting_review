@@ -32,7 +32,7 @@ prosp.taxa<-dat %>%
        count() %>% 
        arrange(desc(n))
 
-prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Other birds", "Seabirds","Mammals",
+prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Other birds", "Mammals","Seabirds",
                                                   "Insects","Fish","Annelids")))
 
 Labs<-paste(prosp.taxa$Order, 
@@ -121,13 +121,18 @@ dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_na
 #Counting the number of studies by year
 prosp.year<-dat %>% 
     dplyr::filter(Class== "prospecting") %>% 
+    complete(Year=seq(min(Year),max(Year),1)) %>% 
+  mutate(Include=ifelse(is.na(Nb),0,1)) %>% 
     group_by(Year) %>% 
-    count()
+   summarize(n=sum(Include))
+ 
 
 evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
-    geom_bar(stat="identity",color="black",fill="white") +
+    #geom_bar(stat="identity",color="black",fill="white") +
+    geom_line() +
+  geom_point(shape=18,size=3) +
     scale_x_continuous(breaks=seq(1990,2022,5),limits=c(1989,2023),expand=c(0,0)) +
-    scale_y_continuous(breaks=seq(0,10,2),limits=c(0,10),expand=c(0,0)) +
+    scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0,0)) +
     labs(y="Number of studies",tag="c) ") +
     theme_classic()
 print(evol)
