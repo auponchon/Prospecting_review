@@ -32,7 +32,7 @@ prosp.taxa<-dat %>%
        count() %>% 
        arrange(desc(n))
 
-prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Other birds", "Mammals","Seabirds",
+prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Mammals","Other birds", "Seabirds",
                                                   "Insects","Fish","Annelids")))
 
 Labs<-paste(prosp.taxa$Order, 
@@ -51,7 +51,7 @@ taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) +
      geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs, fill=Order),
                       size = 3, nudge_x = .3, 
                       segment.size = .7, show.legend = FALSE) +
-    guides(fill = guide_legend(title = "Taxa"))+
+    guides(fill = "none")+
     scale_fill_manual(values=colo) +
     labs(tag="a)") +
     theme_void() 
@@ -103,16 +103,14 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
     geom_label_repel(aes(x=1.4, y = rev(Breaks.track), label = rev(Labs.track)),
                        size = 3, nudge_x = .3,
                        segment.size = .7, show.legend = FALSE) +
-    guides(fill = guide_legend(title = "Method")) +
+    guides(fill = "none") +
     scale_fill_manual(values=colo.trk) +
     labs(tag="b)") +
     theme_void() 
 
 print(meth)
 
-tiff(here::here("outputs","Piecharts_studies.tiff"),height=2000, width=6000,res=500,compression="lzw")
-grid.arrange(taxa,meth,ncol=2)
-dev.off()
+
 
 ##########################################################################################
 # plotting pie chart with tracking methods
@@ -120,7 +118,7 @@ dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_na
 
 #Counting the number of studies by year
 prosp.year<-dat %>% 
-    dplyr::filter(Class== "prospecting") %>% 
+    dplyr::filter(Class== "prospecting" & Year >1999) %>% 
     complete(Year=seq(min(Year),max(Year),1)) %>% 
   mutate(Include=ifelse(is.na(Nb),0,1)) %>% 
     group_by(Year) %>% 
@@ -131,12 +129,17 @@ evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
     #geom_bar(stat="identity",color="black",fill="white") +
     geom_line() +
   geom_point(shape=18,size=3) +
-    scale_x_continuous(breaks=seq(1990,2022,5),limits=c(1989,2023),expand=c(0,0)) +
+    scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1999,2023),expand=c(0,0)) +
     scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0,0)) +
     labs(y="Number of studies",tag="c) ") +
     theme_classic()
 print(evol)
 
+
+tiff(here::here("outputs","Piecharts_studies_Fig_1.tiff"),height=3000, width=6000,res=500,compression="lzw")
+grid.arrange(arrangeGrob(taxa,meth,ncol=2),
+             arrangeGrob(evol,ncol=2),nrow=2)
+dev.off()
 
 ##########################################################################################
 # plotting pie chart with countries
