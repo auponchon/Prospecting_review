@@ -42,7 +42,7 @@ Labs<-paste(prosp.taxa$Order,
 Breaks<-cumsum(prosp.taxa$n) - (prosp.taxa$n/ 2)
 
 #set colors for taxa with birds within same color
-colo<-viridis(nrow(prosp.taxa),begin=0.1)
+colo<-viridis(nrow(prosp.taxa),begin=0.1, alpha=0.7)
 
 #create a pie with prosportions of taxa
 taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) + 
@@ -53,8 +53,11 @@ taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) +
                       segment.size = .7, show.legend = FALSE) +
     guides(fill = "none")+
     scale_fill_manual(values=colo) +
-    labs(tag="a)") +
-    theme_void() 
+     labs(tag="a)") +
+    theme_void() +
+   theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
+         panel.spacing = unit(c(0, 0, 0, 0), "null"))
+    
    
 
 print(taxa)
@@ -94,7 +97,7 @@ Labs.track<-rev(paste(prosp.track$Method,
 Breaks.track<-cumsum(rev(prosp.track$n)) - (rev(prosp.track$n)/ 2)
 
 #set colors for taxa with birds within same color
-colo.trk<-magma(nrow(prosp.track),begin=0.25)
+colo.trk<-magma(nrow(prosp.track),begin=0.25, alpha=0.7)
 
 #create a pie with prosportions of taxa
 meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) + 
@@ -106,7 +109,9 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
     guides(fill = "none") +
     scale_fill_manual(values=colo.trk) +
     labs(tag="b)") +
-    theme_void() 
+    theme_void() +
+  theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
+         panel.spacing = unit(c(0, 0, 0, 0), "null"))
 
 print(meth)
 
@@ -132,13 +137,15 @@ evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
     scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1999,2023),expand=c(0,0)) +
     scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0,0)) +
     labs(y="Number of studies",tag="c) ") +
-    theme_classic()
+    theme_classic()+
+  theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
+         panel.spacing = unit(c(0, 0, 0, 0), "null"))
 print(evol)
 
 
-tiff(here::here("outputs","Piecharts_studies_Fig_1.tiff"),height=3000, width=6000,res=500,compression="lzw")
+tiff(here::here("outputs","Piecharts_studies_Fig_1_update.tiff"),height=3000, width=3000,res=400,compression="lzw")
 grid.arrange(arrangeGrob(taxa,meth,ncol=2),
-             arrangeGrob(evol,ncol=2),nrow=2)
+             evol,nrow=2,heights=c(1,0.7))
 dev.off()
 
 ##########################################################################################
