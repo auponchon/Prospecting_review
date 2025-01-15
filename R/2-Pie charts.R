@@ -82,7 +82,6 @@ dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
 
 #Counting the number of studies by tracking method
 prosp.track<-dat %>% 
-    
     group_by(Method) %>% 
     count() %>% 
     arrange(desc(n))
@@ -115,7 +114,22 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
 
 print(meth)
 
+prosp.year1<-dat %>% 
+  dplyr::filter(Class== "prospecting" & Year >=1999) %>% 
+  complete(Year=seq(min(Year),max(Year),1)) %>% 
+  mutate(Include=ifelse(is.na(Nb),0,1),
+         Method=as.factor(Method))  %>% 
+  group_by(Year, Method) %>% 
+  summarize(N=sum(Include))
 
+prosp.year1$Method<-factor(prosp.year1$Method, levels= c("Ringing/\nDirect obs",
+                                                         "VHF","GPS/PTT", "RFID","Video-recording"))
+
+  
+# year<-ggplot(prosp.year1, aes(x=Year, y=n))+
+#  # geom_bar(stat='identity', aes(fill=Method), position = position_dodge())
+#   #geom_line(aes(color=Method))
+# print(year)
 
 ##########################################################################################
 # plotting pie chart with tracking methods
@@ -123,24 +137,33 @@ dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_na
 
 #Counting the number of studies by year
 prosp.year<-dat %>% 
-    dplyr::filter(Class== "prospecting" & Year >1999) %>% 
+    dplyr::filter(Class== "prospecting" & Year >=1999) %>% 
     complete(Year=seq(min(Year),max(Year),1)) %>% 
   mutate(Include=ifelse(is.na(Nb),0,1)) %>% 
     group_by(Year) %>% 
    summarize(n=sum(Include))
- 
+colo.trk1<-magma(nrow(prosp.track),begin=0.25)
+
 
 evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
     #geom_bar(stat="identity",color="black",fill="white") +
     geom_line() +
+  # geom_line(data=prosp.year1, aes(x=Year, y=N, color=Method)) + 
+  # geom_point(data=prosp.year1, aes(x=Year, y=N, color=Method),
+  #            shape=17,size=1.2) +
   geom_point(shape=18,size=3) +
-    scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1999,2023),expand=c(0,0)) +
+    scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1998,2023),expand=c(0,0)) +
     scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0,0)) +
     labs(y="Number of studies",tag="c) ") +
+ # scale_colour_manual(values=colo.trk1) +
     theme_classic()+
   theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
          panel.spacing = unit(c(0, 0, 0, 0), "null"))
+         #legend.position = "bottom")
 print(evol)
+
+
+
 
 
 tiff(here::here("outputs","Piecharts_studies_Fig_1_update.tiff"),height=3000, width=3000,res=400,compression="lzw")
