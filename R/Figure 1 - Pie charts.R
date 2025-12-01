@@ -9,11 +9,11 @@ library(gridExtra)
 
 
 #import data table from xlsx file
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
+dat<-read_xlsx(here::here("data","References_used_for_review.xlsx"),sheet=1,col_names = T)
 names(dat)<- str_replace_all(names(dat), " ", "_") 
 
 #rename taxa
-dat$Order<-revalue(as.factor(dat$Order), c("annelid" = "Annelids",
+dat$Taxa<-revalue(as.factor(dat$Taxa), c("annelid" = "Annelids",
                                               "fish" = "Fish",
                                               "insect" = "Insects",
                                               "mammal" = "Mammals",
@@ -27,15 +27,14 @@ dat$Order<-revalue(as.factor(dat$Order), c("annelid" = "Annelids",
 
 #select dataset with prospecting and count taxa
 prosp.taxa<-dat %>% 
-       dplyr::filter(Class== "prospecting") %>% 
-       group_by(Order) %>% 
+       group_by(Taxa) %>% 
        count() %>% 
        arrange(desc(n))
 
-prosp.taxa$Order<-factor(prosp.taxa$Order, levels=rev(c("Passerines","Mammals","Other birds", "Seabirds",
+prosp.taxa$Taxa<-factor(prosp.taxa$Taxa, levels=rev(c("Passerines","Mammals","Other birds", "Seabirds",
                                                   "Insects","Fish","Annelids")))
 
-Labs<-paste(prosp.taxa$Order, 
+Labs<-paste(prosp.taxa$Taxa, 
       paste(round(((prosp.taxa$n/sum(prosp.taxa$n))*100),0),"%"), sep=" - ")
 #Labs<-Labs[c(1,3,4,2,5:7)]
 
@@ -45,10 +44,10 @@ Breaks<-cumsum(prosp.taxa$n) - (prosp.taxa$n/ 2)
 colo<-viridis(nrow(prosp.taxa),begin=0.1, alpha=0.7)
 
 #create a pie with prosportions of taxa
-taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Order)) + 
+taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Taxa)) + 
     geom_bar(stat="identity",color="black") +
     coord_polar(theta='y',start=0) +
-     geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs, fill=Order),
+     geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs, fill=Taxa),
                       size = 3, nudge_x = .3, 
                       segment.size = .7, show.legend = FALSE) +
     guides(fill = "none")+
@@ -66,8 +65,7 @@ print(taxa)
 
 ##########################################################################################
 # plotting pie chart with tracking methods
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),col_names = T,sheet=1) %>% 
-               dplyr::filter(Class== "prospecting") 
+dat<-read_xlsx(here::here("data","References_used_for_review.xlsx"),col_names = T,sheet=1) 
 dat$Method<-revalue(as.factor(dat$Method), c("ringing" = "Ringing/\nDirect obs",
                                            "direct observations" = "Ringing/\nDirect obs",
                                            "GPS-UHF" = "GPS/PTT",
@@ -115,7 +113,7 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
 print(meth)
 
 prosp.year1<-dat %>% 
-  dplyr::filter(Class== "prospecting" & Year >=1999) %>% 
+  dplyr::filter(Year >=1999) %>% 
   complete(Year=seq(min(Year),max(Year),1)) %>% 
   mutate(Include=ifelse(is.na(Nb),0,1),
          Method=as.factor(Method))  %>% 
@@ -133,11 +131,11 @@ prosp.year1$Method<-factor(prosp.year1$Method, levels= c("Ringing/\nDirect obs",
 
 ##########################################################################################
 # plotting pie chart with tracking methods
-dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
+dat<-read_xlsx(here::here("data","References_used_for_review.xlsx"),sheet=1,col_names = T)
 
 #Counting the number of studies by year
 prosp.year<-dat %>% 
-    dplyr::filter(Class== "prospecting" & Year >=1999) %>% 
+    dplyr::filter(Year >=1999) %>% 
     complete(Year=seq(min(Year),max(Year),1)) %>% 
   mutate(Include=ifelse(is.na(Nb),0,1)) %>% 
     group_by(Year) %>% 
@@ -165,12 +163,6 @@ print(evol)
 
 
 
-
-tiff(here::here("outputs","Piecharts_studies_Fig_1_update.tiff"),height=3000, width=3000,res=400,compression="lzw")
-grid.arrange(arrangeGrob(taxa,meth,ncol=2),
-             evol,nrow=2,heights=c(1,0.7))
-dev.off()
-
 ##########################################################################################
 # plotting pie chart with countries
 # dat<-read_xlsx(here::here("Data","Prospecting bibliography.xlsx"),sheet=1,col_names = T)
@@ -195,3 +187,83 @@ dev.off()
 # 
 # print(pays)
 # 
+
+#############################################################################################
+#ploting bars according to factors addressed
+#
+
+themes<-read_xlsx(here::here("data","References_used_for_review.xlsx"),sheet=2,col_names = T,
+                  n_max=124)
+names(themes)<- str_replace_all(names(themes), " ", "_") 
+
+#rename taxa
+themes$Taxa<-revalue(as.factor(themes$Taxa), c("annelid" = "Annelids",
+                                           "fish" = "Fish",
+                                           "insect" = "Insects",
+                                           "mammal" = "Mammals",
+                                           "other bird" = "Other birds",
+                                           "passerine" = "Passerines",
+                                           "seabird" = "Seabirds",
+                                           "raptor" = "Other birds",
+                                           "shorebird" = "Other birds",
+                                           "waterfowl" = "Other birds"))
+
+
+themes$Sociality<-revalue(as.factor(themes$Sociality), c("territorial" = "Territorial",
+                                               "colonial" = "Colonial",
+                                               "cooperative" = "Cooperative/social",
+                                               "non-territorial" = "Non-territorial",
+                                               "parasitic" = "Parasitic",
+                                               "semi-colonial" = "Semi-colonial",
+                                               "social" = "Cooperative/social"))
+
+#Give proportion of socialities covered in species
+xx<-themes %>% 
+  group_by(Sociality) %>% 
+  count() %>% 
+  mutate(n=n/124*100)
+xx
+
+#remove columns with less than 5%
+themes<-themes[,c(1:18)]
+
+
+themes_long<-themes %>% 
+    pivot_longer(cols=Sex:Other,
+                 names_to="Theme",
+                 values_to = "Value") %>% 
+   dplyr::mutate(Theme=as.factor(Theme)) %>% 
+  dplyr::filter(Value==1)
+
+themes_long$Theme<-factor(themes_long$Theme, levels=c("Sex","Breeding_status/Age","Social_cues","Timing",
+                                                      "Habitat_quality/availability", "Exploration","Tactics","Familiarity",
+                                                      "Opportunistic_record","Cost","Other"))
+
+themes_long$Taxa<-factor(themes_long$Taxa, levels=rev(c("Passerines","Mammals","Other birds", "Seabirds",
+                                                      "Insects","Fish","Annelids")))
+
+themes_long$Sociality<-factor(themes_long$Sociality, levels=rev(c("Territorial","Colonial","Cooperative/social",
+                                                              "Parasitic","Semi-colonial","Non-territorial")))
+
+
+themes_gg<-ggplot(themes_long, aes(fill=Taxa, y=Value, x=Theme)) + 
+           geom_bar(position="stack", stat="identity") + 
+  scale_x_discrete(labels=c("Sex","Breeding status\nAge","Social cues","Timing",
+                                 "Habitat quality\navailability", "Exploration","Tactics",
+                            "Habitat\nfamiliarity",                 
+                                 "Opportunistic\nobservations","Cost","Other"))+
+  scale_y_continuous(limits=c(0,52), breaks=seq(0,50,10), expand=c(0.01,0.01)) +
+  labs(x="",y="Number of studies",tag="d)") + 
+  scale_fill_manual(values=colo) +
+  # scale_y_continuous(limits=c(0,60),
+  #                    expand=c(0.001,0.001),
+  #                    breaks=seq(0,60,15))+
+  theme_classic()+
+  theme(legend.position=c(.9,.75))
+print(themes_gg)
+
+tiff(here::here("outputs","Piecharts_studies_Fig_1_final.tiff"),height=4000, width=4000,
+     res=400,compression="lzw")
+grid.arrange(arrangeGrob(taxa,meth,ncol=2),
+             evol,themes_gg,nrow=3,heights=c(1,0.7,1))
+dev.off()
