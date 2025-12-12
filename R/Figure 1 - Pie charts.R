@@ -41,7 +41,8 @@ Labs<-paste(prosp.taxa$Taxa,
 Breaks<-cumsum(prosp.taxa$n) - (prosp.taxa$n/ 2)
 
 #set colors for taxa with birds within same color
-colo<-viridis(nrow(prosp.taxa),begin=0.1, alpha=0.7)
+#colo<-viridis(nrow(prosp.taxa),begin=0.1, alpha=0.7)
+colo<-c("#ef4043","#f26b21","#ff9900","#f9c74f","#90be6d","#43aa8b","#577590")
 
 #create a pie with prosportions of taxa
 taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Taxa)) + 
@@ -151,7 +152,7 @@ evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
   #            shape=17,size=1.2) +
   geom_point(shape=18,size=3) +
     scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1998,2023),expand=c(0,0)) +
-    scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0,0)) +
+    scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0.1,0.1)) +
     labs(y="Number of studies",tag="c) ") +
  # scale_colour_manual(values=colo.trk1) +
     theme_classic()+
@@ -248,8 +249,8 @@ themes_long$Sociality<-factor(themes_long$Sociality, levels=rev(c("Territorial",
 
 themes_gg<-ggplot(themes_long, aes(fill=Taxa, y=Value, x=Theme)) + 
            geom_bar(position="stack", stat="identity") + 
-  scale_x_discrete(labels=c("Sex","Breeding status\nAge","Social cues","Timing",
-                                 "Habitat quality\navailability", "Exploration","Tactics",
+  scale_x_discrete(labels=c("Sex","Age and/or\nbreeding status","Social cues","Timing",
+                                 "Habitat quality\navailability", "General\nexploration","Tactics",
                             "Habitat\nfamiliarity",                 
                                  "Opportunistic\nobservations","Cost","Other"))+
   scale_y_continuous(limits=c(0,52), breaks=seq(0,50,10), expand=c(0.01,0.01)) +
@@ -262,8 +263,8 @@ themes_gg<-ggplot(themes_long, aes(fill=Taxa, y=Value, x=Theme)) +
   theme(legend.position=c(.9,.75))
 print(themes_gg)
 
-tiff(here::here("outputs","Piecharts_studies_Fig_1_final.tiff"),height=4000, width=4000,
-     res=400,compression="lzw")
+tiff(here::here("outputs","Figure_1_Piecharts_studies.tiff"),height=6200, width=5500,
+     res=600,compression="lzw")
 grid.arrange(arrangeGrob(taxa,meth,ncol=2),
              evol,themes_gg,nrow=3,heights=c(1,0.7,1))
 dev.off()
