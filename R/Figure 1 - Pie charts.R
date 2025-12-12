@@ -268,3 +268,18 @@ tiff(here::here("outputs","Figure_1_Piecharts_studies.tiff"),height=6200, width=
 grid.arrange(arrangeGrob(taxa,meth,ncol=2),
              evol,themes_gg,nrow=3,heights=c(1,0.7,1))
 dev.off()
+
+
+#table to have an idea of the number of factors addressed within a single study
+themes_count<-themes %>% 
+  pivot_longer(cols=Sex:Other,
+               names_to="Theme",
+               values_to = "Value") %>% 
+  dplyr::mutate(Theme=as.factor(Theme)) %>% 
+  dplyr::filter(Value==1) %>% 
+  group_by(Author, Year) %>% 
+  summarize(Count=sum(Value)) %>% 
+  group_by(Count) %>% 
+  summarize(Prop=n()/124)
+  
+
