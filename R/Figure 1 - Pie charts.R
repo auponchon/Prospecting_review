@@ -49,14 +49,15 @@ taxa<-ggplot(prosp.taxa, aes(x = 1, y = n, fill = Taxa)) +
     geom_bar(stat="identity",color="black") +
     coord_polar(theta='y',start=0) +
      geom_label_repel  (aes(x=1.4, y = Breaks, label = Labs, fill=Taxa),
-                      size = 3, nudge_x = .3, 
-                      segment.size = .7, show.legend = FALSE) +
+                      size = 4.5, nudge_x = .3, 
+                      segment.size = 0.7, show.legend = FALSE) +
     guides(fill = "none")+
     scale_fill_manual(values=colo) +
      labs(tag="a)") +
     theme_void() +
    theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
-         panel.spacing = unit(c(0, 0, 0, 0), "null"))
+         panel.spacing = unit(c(0, 0, 0, 0), "null"),
+         text = element_text(size=13))
     
    
 
@@ -102,7 +103,7 @@ meth<-ggplot(prosp.track, aes(x = 1, y = n, fill = Method)) +
     geom_bar(stat="identity",color="black") +
     coord_polar(theta='y',start=0) +
     geom_label_repel(aes(x=1.4, y = rev(Breaks.track), label = rev(Labs.track)),
-                       size = 3, nudge_x = .3,
+                       size = 4.5, nudge_x = .3,
                        segment.size = .7, show.legend = FALSE) +
     guides(fill = "none") +
     scale_fill_manual(values=colo.trk) +
@@ -152,12 +153,14 @@ evol<-ggplot(prosp.year,aes(x=Year, y=n)) +
   #            shape=17,size=1.2) +
   geom_point(shape=18,size=3) +
     scale_x_continuous(breaks=seq(2000,2022,5),limits=c(1998,2023),expand=c(0,0)) +
-    scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0.1,0.1)) +
+    scale_y_continuous(breaks=seq(0,12,2),limits=c(0,12),expand=c(0.01,0.01)) +
     labs(y="Number of studies",tag="c) ") +
  # scale_colour_manual(values=colo.trk1) +
     theme_classic()+
-  theme( plot.margin = unit(c(0, 0, 0, 0), "null"),
-         panel.spacing = unit(c(0, 0, 0, 0), "null"))
+  theme( #plot.margin = unit(c(0, 0, 0, 0), "null"),
+        #  panel.spacing = unit(c(0, 0, 0, 0), "null"),
+         axis.text = element_text(size=13),
+         axis.title = element_text(size=13))
          #legend.position = "bottom")
 print(evol)
 
@@ -260,10 +263,13 @@ themes_gg<-ggplot(themes_long, aes(fill=Taxa, y=Value, x=Theme)) +
   #                    expand=c(0.001,0.001),
   #                    breaks=seq(0,60,15))+
   theme_classic()+
-  theme(legend.position=c(.9,.75))
+  theme(legend.position=c(.9,.75),
+        axis.text = element_text(size=13),
+        axis.title = element_text(size=13),
+        legend.text = element_text(size=13))
 print(themes_gg)
 
-tiff(here::here("outputs","Figure_1_Piecharts_studies.tiff"),height=6200, width=5500,
+tiff(here::here("outputs","Figure_1_Piecharts_studies.tiff"),height=7000, width=7000,
      res=600,compression="lzw")
 grid.arrange(arrangeGrob(taxa,meth,ncol=2),
              evol,themes_gg,nrow=3,heights=c(1,0.7,1))
